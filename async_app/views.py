@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from .utils import run_async, run_sync
 
 
-class TheLastOnesView(APIView):
+class TheFirstOnesView(APIView):
     def get(self, request):
         return Response(
             {

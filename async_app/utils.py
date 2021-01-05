@@ -112,11 +112,12 @@ async def get_baidu_first_page(search_term):
 
 @search_engine("DuckDuckGo")
 async def get_duckduckgo_first_page(search_term):
-    duckduckgosearch = DuckDuckGoSearch()
-    duckduckgo_first_page = await duckduckgosearch.async_search(
-        query=search_term, page=1, cache=False
-    )
-    return duckduckgo_first_page["links"][0]
+    # duckduckgosearch = DuckDuckGoSearch()
+    # duckduckgo_first_page = await duckduckgosearch.async_search(
+    #     query=search_term, page=1, cache=False
+    # )
+    # return duckduckgo_first_page["links"][0]
+    return "No results"
 
 
 @search_engine("Bing")
