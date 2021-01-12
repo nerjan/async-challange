@@ -9,7 +9,7 @@ POST request
 
 ```
 curl -X POST \
-  http://0.0.0.0:8000/validate \
+  http://0.0.0.0:8000/firstone \
   -H 'Content-Type: application/json' \
   -d '{"one serach", "second search"}
 ```
