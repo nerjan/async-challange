@@ -20,6 +20,9 @@ from search_engine_parser.core.engines.yandex import Search as YandexSearch
 from search_engine_parser.core.exceptions import NoResultsOrTrafficError
 from youtubesearchpython import Search
 
+# How many requests at perform asynchronously
+DIVIDER = 100
+
 
 def search_engine(name):
     def decorator(func):
@@ -30,6 +33,8 @@ def search_engine(name):
                 return await func(*args, **kwargs)
             except NoResultsOrTrafficError:
                 return "Error: no results, or they are robot proof!"
+            except:
+                return "Error: something goes wrong"
 
         return wrapper
 
@@ -112,12 +117,11 @@ async def get_baidu_first_page(search_term):
 
 @search_engine("DuckDuckGo")
 async def get_duckduckgo_first_page(search_term):
-    # duckduckgosearch = DuckDuckGoSearch()
-    # duckduckgo_first_page = await duckduckgosearch.async_search(
-    #     query=search_term, page=1, cache=False
-    # )
-    # return duckduckgo_first_page["links"][0]
-    return "No results"
+    duckduckgosearch = DuckDuckGoSearch()
+    duckduckgo_first_page = await duckduckgosearch.async_search(
+        query=search_term, page=1, cache=False
+    )
+    return duckduckgo_first_page["links"][0]
 
 
 @search_engine("Bing")
@@ -142,11 +146,14 @@ async def get_google_first_page(search_term):
     if search_term == "google":
         google_first_page = "google.com"
     else:
-        google_first_page = next(
-            search(search_term, tld="co.in", num=1, start=1, stop=1)
-        )
-    if settings.DEBUG:
-        print("GOOGLE")
+        if settings.DEBUG:
+            print("GOOGLE")
+        try:
+            google_first_page = next(
+                search(search_term, tld="co.in", num=1, start=1, stop=1)
+            )
+        except:
+            google_first_page = "Error: They are robot proof!"
     return google_first_page
 
 
@@ -158,22 +165,24 @@ async def get_youtube_first_video(search_term):
     return youtube_first_video
 
 
-async def search_everywhere(search_term):
-    tasks = [
-        asyncio.ensure_future(get_google_first_page(search_term)),
-        asyncio.ensure_future(get_youtube_first_video(search_term)),
-        asyncio.ensure_future(get_stackoverflow_first_page(search_term)),
-        asyncio.ensure_future(get_yahoo_first_page(search_term)),
-        asyncio.ensure_future(get_baidu_first_page(search_term)),
-        asyncio.ensure_future(get_duckduckgo_first_page(search_term)),
-        asyncio.ensure_future(get_bing_first_page(search_term)),
-        asyncio.ensure_future(get_github_first_page(search_term)),
-        asyncio.ensure_future(get_yandex_first_page(search_term)),
-        asyncio.ensure_future(get_aol_first_page(search_term)),
-        asyncio.ensure_future(get_ask_first_page(search_term)),
-        asyncio.ensure_future(get_mal_first_page(search_term)),
-        asyncio.ensure_future(get_coursera_first_page(search_term)),
-    ]
+async def search_everywhere(search_terms):
+    tasks = []
+    for search_term in search_terms:
+        tasks += [
+            asyncio.ensure_future(get_google_first_page(search_term)),
+            asyncio.ensure_future(get_youtube_first_video(search_term)),
+            asyncio.ensure_future(get_stackoverflow_first_page(search_term)),
+            asyncio.ensure_future(get_yahoo_first_page(search_term)),
+            asyncio.ensure_future(get_baidu_first_page(search_term)),
+            asyncio.ensure_future(get_duckduckgo_first_page(search_term)),
+            asyncio.ensure_future(get_bing_first_page(search_term)),
+            asyncio.ensure_future(get_github_first_page(search_term)),
+            asyncio.ensure_future(get_yandex_first_page(search_term)),
+            asyncio.ensure_future(get_aol_first_page(search_term)),
+            asyncio.ensure_future(get_ask_first_page(search_term)),
+            asyncio.ensure_future(get_mal_first_page(search_term)),
+            asyncio.ensure_future(get_coursera_first_page(search_term)),
+        ]
     responses = await asyncio.gather(*tasks)
     return responses
 
@@ -198,37 +207,41 @@ def search_everywhere_sync(search_term):
 
 
 def run_sync(search_term):
-    t_start = time()
     search_results = search_everywhere_sync(search_term)
-    time_taken = time() - t_start
-    return get_search_dict(search_results, time_taken)
+    return get_search_dict(search_results)
 
 
-def run_async(search_term):
-    t_start = time()
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    search_results = loop.run_until_complete(search_everywhere(search_term))
-    loop.close()
-    time_taken = time() - t_start
-    return get_search_dict(search_results, time_taken)
+def run_async(search_terms):
+    search_dict = {}
+    for i in range(int(len(search_terms)/DIVIDER)+1):
+        five_search_terms = search_terms[DIVIDER*i:DIVIDER*(i+1)]
+        if five_search_terms:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            search_results = loop.run_until_complete(search_everywhere(five_search_terms))
+            loop.close()
+            i = 0
+            for search_term in five_search_terms:
+                search_dict[search_term] = get_search_dict(search_results[i:i + 13])
+                i += 13
+    return search_dict
 
 
-def get_search_dict(search_results, time_taken):
+def get_search_dict(search_results):
+    i = 0
     search_dict = {
-        "Google": search_results[0],
-        "Youtube": search_results[1],
-        "StackOverflow": search_results[2],
-        "Yahoo": search_results[3],
-        "Baidu": search_results[4],
-        "DuckDuckGo": search_results[5],
-        "Bing": search_results[6],
-        "GitHub": search_results[7],
-        "Yandex": search_results[8],
-        "Aol": search_results[9],
-        "Ask": search_results[10],
-        "MyAnimeList": search_results[11],
-        "Coursera": search_results[12],
-        "It took": f"{round(time_taken,2)}s",
+        "Google": search_results[i],
+        "Youtube": search_results[i+1],
+        "StackOverflow": search_results[i+2],
+        "Yahoo": search_results[i+3],
+        "Baidu": search_results[i+4],
+        "DuckDuckGo": search_results[i+5],
+        "Bing": search_results[i+6],
+        "GitHub": search_results[i+7],
+        "Yandex": search_results[i+8],
+        "Aol": search_results[i+9],
+        "Ask": search_results[i+10],
+        "MyAnimeList": search_results[i+11],
+        "Coursera": search_results[i+12],
     }
     return search_dict
