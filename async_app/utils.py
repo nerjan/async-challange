@@ -24,6 +24,7 @@ from youtubesearchpython import Search
 DIVIDER = 100
 
 
+
 def search_engine(name):
     def decorator(func):
         async def wrapper(*args, **kwargs):
