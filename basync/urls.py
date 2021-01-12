@@ -7,5 +7,5 @@ router = routers.DefaultRouter()
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("lastone/", views.TheLastOnesView.as_view()),
+    path("firstone/", views.TheFirstOnesView.as_view()),
 ]

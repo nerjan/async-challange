@@ -5,19 +5,12 @@ from rest_framework.views import APIView
 from .utils import run_async, run_sync
 
 
-class TheLastOnesView(APIView):
-    def get(self, request):
-        return Response(
-            {
-                "Example post request": "{'async': 'True', 'sync': 'False', 'search_term': 'google'}"
-            }
-        )
-
+class TheFirstOnesView(APIView):
     def post(self, request):
         search_dict = {}
-        for query in request.data["body"]:
-            if settings.ASYNC == "True":
-                search_dict[query] = run_async(query)
-            else:
+        if settings.ASYNC == "True":
+            search_dict = run_async(request.data["body"])
+        else:
+            for query in request.data["body"]:
                 search_dict[query] = run_sync(query)
         return Response([search_dict])
