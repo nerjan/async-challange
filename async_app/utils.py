@@ -142,7 +142,6 @@ async def get_google_first_page(search_term):
             print("GOOGLE")
         try:
             google_first_page = await next(
-            google_first_page = next(
                 search(search_term, tld="co.in", num=1, start=1, stop=1)
             )
         except:
