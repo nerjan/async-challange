@@ -1,5 +1,4 @@
 import asyncio
-from time import time
 
 from asgiref.sync import async_to_sync
 from django.conf import settings
@@ -17,12 +16,6 @@ from search_engine_parser.core.engines.stackoverflow import \
     Search as StackOverflowSearch
 from search_engine_parser.core.engines.yahoo import Search as YahooSearch
 from search_engine_parser.core.engines.yandex import Search as YandexSearch
-from search_engine_parser.core.exceptions import NoResultsOrTrafficError
-from youtubesearchpython import Search
-
-# How many requests at perform asynchronously
-DIVIDER = 100
-
 
 
 def search_engine(name):
@@ -32,10 +25,8 @@ def search_engine(name):
                 print(name)
             try:
                 return await func(*args, **kwargs)
-            except NoResultsOrTrafficError:
-                return "Error: no results, or they are robot proof!"
             except:
-                return "Error: something goes wrong"
+                return ""
 
         return wrapper
 
@@ -150,7 +141,7 @@ async def get_google_first_page(search_term):
         if settings.DEBUG:
             print("GOOGLE")
         try:
-            google_first_page = next(
+            google_first_page = await next(
                 search(search_term, tld="co.in", num=1, start=1, stop=1)
             )
         except:
@@ -158,31 +149,15 @@ async def get_google_first_page(search_term):
     return google_first_page
 
 
-async def get_youtube_first_video(search_term):
-    all_search = Search(search_term, limit=1)
-    youtube_first_video = all_search.result()["result"][0]["link"]
-    if settings.DEBUG:
-        print("YOUTUBE")
-    return youtube_first_video
-
-
 async def search_everywhere(search_terms):
     tasks = []
     for search_term in search_terms:
         tasks += [
-            asyncio.ensure_future(get_google_first_page(search_term)),
-            asyncio.ensure_future(get_youtube_first_video(search_term)),
-            asyncio.ensure_future(get_stackoverflow_first_page(search_term)),
             asyncio.ensure_future(get_yahoo_first_page(search_term)),
-            asyncio.ensure_future(get_baidu_first_page(search_term)),
-            asyncio.ensure_future(get_duckduckgo_first_page(search_term)),
             asyncio.ensure_future(get_bing_first_page(search_term)),
-            asyncio.ensure_future(get_github_first_page(search_term)),
-            asyncio.ensure_future(get_yandex_first_page(search_term)),
             asyncio.ensure_future(get_aol_first_page(search_term)),
             asyncio.ensure_future(get_ask_first_page(search_term)),
             asyncio.ensure_future(get_mal_first_page(search_term)),
-            asyncio.ensure_future(get_coursera_first_page(search_term)),
         ]
     responses = await asyncio.gather(*tasks)
     return responses
@@ -190,19 +165,11 @@ async def search_everywhere(search_terms):
 
 def search_everywhere_sync(search_term):
     tasks = [
-        async_to_sync(get_google_first_page)(search_term),
-        async_to_sync(get_youtube_first_video)(search_term),
-        async_to_sync(get_stackoverflow_first_page)(search_term),
         async_to_sync(get_yahoo_first_page)(search_term),
-        async_to_sync(get_baidu_first_page)(search_term),
-        async_to_sync(get_duckduckgo_first_page)(search_term),
         async_to_sync(get_bing_first_page)(search_term),
-        async_to_sync(get_github_first_page)(search_term),
-        async_to_sync(get_yandex_first_page)(search_term),
         async_to_sync(get_aol_first_page)(search_term),
         async_to_sync(get_ask_first_page)(search_term),
         async_to_sync(get_mal_first_page)(search_term),
-        async_to_sync(get_coursera_first_page)(search_term),
     ]
     return tasks
 
@@ -214,35 +181,22 @@ def run_sync(search_term):
 
 def run_async(search_terms):
     search_dict = {}
-    for i in range(int(len(search_terms)/DIVIDER)+1):
-        five_search_terms = search_terms[DIVIDER*i:DIVIDER*(i+1)]
-        if five_search_terms:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            search_results = loop.run_until_complete(search_everywhere(five_search_terms))
-            loop.close()
-            i = 0
-            for search_term in five_search_terms:
-                search_dict[search_term] = get_search_dict(search_results[i:i + 13])
-                i += 13
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    search_results = loop.run_until_complete(search_everywhere(search_terms))
+    loop.close()
+    for search_term in search_terms:
+        search_dict[search_term] = get_search_dict(search_results)
     return search_dict
 
 
 def get_search_dict(search_results):
     i = 0
     search_dict = {
-        "Google": search_results[i],
-        "Youtube": search_results[i+1],
-        "StackOverflow": search_results[i+2],
-        "Yahoo": search_results[i+3],
-        "Baidu": search_results[i+4],
-        "DuckDuckGo": search_results[i+5],
-        "Bing": search_results[i+6],
-        "GitHub": search_results[i+7],
-        "Yandex": search_results[i+8],
-        "Aol": search_results[i+9],
-        "Ask": search_results[i+10],
-        "MyAnimeList": search_results[i+11],
-        "Coursera": search_results[i+12],
+        "Yahoo": search_results[i+0],
+        "Bing": search_results[i+1],
+        "Aol": search_results[i+2],
+        "Ask": search_results[i+3],
+        "MyAnimeList": search_results[i+4],
     }
-    return search_dict
+    return {k: v for k, v in search_dict.items() if v}

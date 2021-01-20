@@ -2,6 +2,7 @@
 App made to learn a little bit more of python asynchronous. 
 It use a various search engines to get 1st result of each search with imput phrase.
 
+
 ## Setup
 
 Copy `.env-template` into `.env` and fill with secrets
@@ -25,32 +26,20 @@ Response:
 [
     {
         "first search": {
-            "Google": "google first page",
-            "Youtube": "youtube first video",
-            "StackOverflow": "etc.",
-            "Yahoo": "etc.",
+            "Yahoo": "Yahoo 1st result",
             "Baidu": "etc.",
-            "DuckDuckGo": "etc.",
             "Bing": "etc.",
-            "GitHub": "etc.",
-            "Yandex": "etc.",
             "Aol": "etc.",
-            "Ask": "etc.","etc.",
-            "Coursera": "etc.",
+            "Ask": "etc.",
+            "MyAnimeList": "etc."
         },
         "second search": {
-            "Google": "google first page",
-            "Youtube": "youtube first video",
-            "StackOverflow": "etc.",
-            "Yahoo": "etc.",
+            "Yahoo": "Yahoo 1st result",
             "Baidu": "etc.",
-            "DuckDuckGo": "etc.",
             "Bing": "etc.",
-            "GitHub": "etc.",
-            "Yandex": "etc.",
             "Aol": "etc.",
-            "Ask": "etc.","etc.",
-            "Coursera": "etc.",
+            "Ask": "etc.",
+            "MyAnimeList": "etc."
         },
     }
 ]
