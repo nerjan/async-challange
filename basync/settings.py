@@ -31,7 +31,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if os.environ.get("DEBUG") == "True" else False
 
-ALLOWED_HOSTS = ["0.0.0.0", "localhost"]
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["0.0.0.0", "localhost"])
 
 
 # Application definition
@@ -83,11 +83,11 @@ WSGI_APPLICATION = "basync.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
-        "HOST": "db",
-        "PORT": 5432,
+        "NAME": os.environ.get("POSTGRES_USER"),
+        "USER": os.environ.get("POSTGRES_USER"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+        "HOST": os.environ.get("POSTGRES_HOST"),
+        "PORT": int(os.environ.get("POSTGRES_PORT")),
     }
 }
 
