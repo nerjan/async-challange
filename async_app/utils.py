@@ -154,7 +154,6 @@ async def search_everywhere(search_terms):
     for search_term in search_terms:
         tasks += [
             asyncio.ensure_future(get_yahoo_first_page(search_term)),
-            asyncio.ensure_future(get_bing_first_page(search_term)),
             asyncio.ensure_future(get_aol_first_page(search_term)),
             asyncio.ensure_future(get_ask_first_page(search_term)),
             asyncio.ensure_future(get_mal_first_page(search_term)),
@@ -166,7 +165,6 @@ async def search_everywhere(search_terms):
 def search_everywhere_sync(search_term):
     tasks = [
         async_to_sync(get_yahoo_first_page)(search_term),
-        async_to_sync(get_bing_first_page)(search_term),
         async_to_sync(get_aol_first_page)(search_term),
         async_to_sync(get_ask_first_page)(search_term),
         async_to_sync(get_mal_first_page)(search_term),
@@ -185,8 +183,10 @@ def run_async(search_terms):
     asyncio.set_event_loop(loop)
     search_results = loop.run_until_complete(search_everywhere(search_terms))
     loop.close()
+    i = 0
     for search_term in search_terms:
-        search_dict[search_term] = get_search_dict(search_results)
+        search_dict[search_term] = get_search_dict(search_results[i: i+4])
+        i += 4
     return search_dict
 
 
@@ -194,9 +194,8 @@ def get_search_dict(search_results):
     i = 0
     search_dict = {
         "Yahoo": search_results[i+0],
-        "Bing": search_results[i+1],
-        "Aol": search_results[i+2],
-        "Ask": search_results[i+3],
-        "MyAnimeList": search_results[i+4],
+        "Aol": search_results[i+1],
+        "Ask": search_results[i+2],
+        "MyAnimeList": search_results[i+3],
     }
     return {k: v for k, v in search_dict.items() if v}

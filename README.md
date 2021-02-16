@@ -27,16 +27,12 @@ Response:
     {
         "first search": {
             "Yahoo": "Yahoo 1st result",
-            "Baidu": "etc.",
-            "Bing": "etc.",
             "Aol": "etc.",
             "Ask": "etc.",
             "MyAnimeList": "etc."
         },
         "second search": {
             "Yahoo": "Yahoo 1st result",
-            "Baidu": "etc.",
-            "Bing": "etc.",
             "Aol": "etc.",
             "Ask": "etc.",
             "MyAnimeList": "etc."
